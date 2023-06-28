@@ -99,16 +99,24 @@ public class ForestPage extends AppPage {
     public void getEnergy(Point point) throws Exception {
         tap(point);
         try {
-            WebElement element = driver.findElement(tipCloseBtn);
+            WebElement closeBtn = driver.findElement(tipCloseBtn);
+            //如果上一步弹出了tip，进一步判断是不是帮好友复活能量
             try {
-                click(element);
+                WebElement resurrectionBtn = driver.findElement(confirmSendBtn);
+                click(resurrectionBtn);//确认发送
                 Thread.currentThread().sleep(500);
-            } catch (StaleElementReferenceException e) {
-                driver.findElement(tipCloseBtn).click();
-                Thread.currentThread().sleep(500);
+            } catch (RuntimeException e) {
+                logger.warn("检测到弹出了tip,但不是『帮好友复活能量』", e);
+                try {
+                    click(closeBtn);
+                    Thread.currentThread().sleep(500);
+                } catch (StaleElementReferenceException e2) {
+                    driver.findElement(tipCloseBtn).click();
+                    Thread.currentThread().sleep(500);
+                }
             }
         } catch (NoSuchElementException e) {
-
+            //没有找到是正常情况，大部分情况并不会点击触发tip
         }
         /**
          * 帮好友复活能量
@@ -123,25 +131,6 @@ public class ForestPage extends AppPage {
 //            Thread.currentThread().sleep(500);
 //        } catch (NoSuchElementException e) {
 //            //这是正常情况，因为大部分点击不会弹出『帮好友收能量』，除非好友能量过期，并且点击到了过期能量球
-//        } catch (InterruptedException e) {
-//
-//        }
-        /**
-         * 兼容皮肤tip
-         */
-//        try {
-//            //xx皮肤，
-//            driver.findElement(skinTip);
-//            //上一步没有抛出异常，则点击X关闭皮肤tip
-//            WebElement element = untilVisible(tipCloseBtn);
-//            try {
-//                click(element);
-//            } catch (StaleElementReferenceException e) {
-//                driver.findElement(tipCloseBtn).click();
-//            }
-//            Thread.currentThread().sleep(500);
-//        } catch (NoSuchElementException e) {
-//
 //        } catch (InterruptedException e) {
 //
 //        }

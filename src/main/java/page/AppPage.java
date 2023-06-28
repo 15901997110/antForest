@@ -71,9 +71,18 @@ public abstract class AppPage implements Serializable {
     }
 
     protected void click(WebElement element) {
-        //先判断元素可见，WebElement.isDisplayed()==true;
-        wait.until(ExpectedConditions.visibilityOf(element));
-        element.click();
+        try {
+            wait.until(ExpectedConditions.visibilityOf(element));
+            element.click();
+        } catch (StaleElementReferenceException e) {
+            logger.warn("", e);
+            try {
+                Thread.currentThread().sleep(500);
+            } catch (InterruptedException interruptedException) {
+
+            }
+            element.click();
+        }
     }
 
     /**
