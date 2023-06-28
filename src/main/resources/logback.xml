@@ -42,7 +42,7 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         </encoder>
     </appender>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${logFilePrefix}/_autotest.log</file>
+        <file>${logFilePrefix}/_ant_forest.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${logFilePrefix}/${backFileSuffix}.ant_forest.log</fileNamePattern>
             <maxHistory>${maxHistory}</maxHistory>

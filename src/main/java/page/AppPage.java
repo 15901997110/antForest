@@ -1,9 +1,11 @@
 package page;
 
 import com.google.common.collect.ImmutableList;
+import enums.MatchType;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.AppiumFluentWait;
 import io.appium.java_client.pagefactory.AppiumFieldDecorator;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Interaction;
 import org.openqa.selenium.interactions.Pause;
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.List;
 
 
 /**
@@ -89,20 +92,6 @@ public abstract class AppPage implements Serializable {
 
     protected WebElement untilVisible(WebElement element) {
         return wait.until(ExpectedConditions.visibilityOf(element));
-    }
-
-    /**
-     * 判断元素可见（Element.isEnabled=true）
-     */
-    protected Boolean ifVisibilityOfElementLocated(By by) {
-        Boolean flag;
-        try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(by));
-            flag = true;
-        } catch (Exception e) {
-            flag = false;
-        }
-        return flag;
     }
 
     /**
@@ -179,7 +168,7 @@ public abstract class AppPage implements Serializable {
      * @param point
      */
     protected void tap(Point point) {
-        longPress(point, 200L);
+        longPress(point, 100L);
     }
 
     /**
@@ -207,4 +196,266 @@ public abstract class AppPage implements Serializable {
         tap.addAction(moveToStart).addAction(pressDown).addAction(pause).addAction(pressUp);
         driver.perform(ImmutableList.of(tap));
     }
+
+    /**
+     * 获取元素属性值
+     * https://w3c.github.io/webdriver/#get-element-attribute
+     */
+    public String getAttribute(By by, String attribute) {
+        System.out.println("getAttributeClass===");
+        WebElement element = getWait().until(ExpectedConditions.visibilityOfElementLocated(by));
+        return this.getAttribute(element, attribute);
+    }
+
+    /**
+     * 获取元素属性值
+     */
+    public String getAttribute(WebElement element, String attribute) {
+        logger.info(element.toString());
+        return element.getAttribute(attribute);
+    }
+
+    /**
+     * 直到指定的元素属性值等于value
+     */
+    public void untilAttributeEquals(By by, String attribute, String value) {
+        getWait().until(ExpectedConditions.attributeToBe(by, attribute, value));
+    }
+
+    public void untilAttributeEquals(WebElement element, String attribute, String value) {
+        getWait().until(ExpectedConditions.attributeToBe(element, attribute, value));
+    }
+
+    /**
+     * 直到指定的元素属性值包含期望的value
+     */
+    public void untilAttributeContains(By by, String attribute, String value) {
+        getWait().until(ExpectedConditions.attributeContains(by, attribute, value));
+    }
+
+    public void untilAttributeContains(WebElement element, String attribute, String value) {
+        logger.info(element.toString());
+        getWait().until(ExpectedConditions.attributeContains(element, attribute, value));
+    }
+
+    /**
+     * 直到元素属性值不包含某个属性
+     */
+    public void untilAttributeNotContains(By by, String attribute, String value) {
+        getWait().until(d -> {
+            String property = this.getAttribute(by, attribute);
+            if (property.contains(value)) return false;
+            else return true;
+        });
+    }
+
+    /**
+     * 直到元素属性值不包含某个属性
+     */
+    public void untilAttributeNotContains(WebElement element, String attribute, String value) {
+        getWait().until(d -> {
+            String property = this.getAttribute(element, attribute);
+            if (property.contains(value)) return false;
+            else return true;
+        });
+    }
+
+    /**
+     * 直到指定的元素属性值非空
+     */
+    public void untilAttributeNotEmpty(By by, String attribute) {
+        getWait().until(d -> {
+            WebElement element = d.findElement(by);
+            String value = element.getAttribute(attribute);
+            return !"".equals(value);
+        });
+    }
+
+
+    /**
+     * 选择器中文本值不为空
+     *
+     * @param by selector
+     */
+    public void untilTextNotEmpty(By by) {
+        getWait().until(d -> StringUtils.isNotBlank(this.getText(by)));
+    }
+
+
+    /**
+     * 直到指定的元素属性值变成空
+     * 包含两种情况：1.没有此属性；2.有属性，无值
+     */
+    public void untilAttributeToBeEmpty(By by, String attribute) {
+        getWait().until(d -> {
+            WebElement e = d.findElement(by);
+            String value = e.getAttribute(attribute);
+            return "".equals(value);
+        });
+    }
+
+    /**
+     * 直到元素个数大于等于期望的元素个数
+     */
+    public List<WebElement> untilElementCountGreaterThanOrEqual(By by, Integer expectedCount) {
+        if (null == expectedCount) expectedCount = 1;
+        Integer finalExpectedCount = expectedCount;
+        List<WebElement> ret = getWait().until(d -> {
+            List<WebElement> elements = d.findElements(by);
+            if (elements.size() >= finalExpectedCount) return elements;
+            else return null;
+        });
+        return ret;
+    }
+
+    /**
+     * 直到元素文本匹配到期望值,缺省使用正则匹配
+     */
+    public void untilTextMatch(By by, String expectedText, MatchType matchType) {
+        if (null == matchType) matchType = MatchType.match;
+        MatchType finalMatchType = matchType;
+        getWait().until(d -> {
+            String text = this.getText(by);
+            return MatchType.match(text, expectedText, finalMatchType);
+        });
+    }
+
+    /**
+     * 直到文本匹配到期望值的取反，缺省使用正则匹配
+     * 比如单价默认的值是0.00，当输入商品后，页面会自动更新为非0.00的一个价格
+     */
+    public void untilTextNotMatch(By by, String unexpectedText, MatchType matchType) {
+        if (null == matchType) matchType = MatchType.match;
+        MatchType finalMatchType = matchType;
+        getWait().until(d -> {
+            String text = this.getText(by);
+            return !MatchType.match(text, unexpectedText, finalMatchType);
+        });
+    }
+
+
+    /**
+     * 直到元素文本匹配到期望值，缺省使用正则匹配
+     */
+    public void untilTextMatch(WebElement element, String expectedText, MatchType matchType) {
+        logger.info(element.toString());
+        if (null == matchType) matchType = MatchType.match;
+        MatchType finalMatchType = matchType;
+        getWait().until(d -> {
+            String text = element.getText();
+            return MatchType.match(text, expectedText, finalMatchType);
+        });
+    }
+
+    /**
+     * 直到文本匹配到期望值的取反，缺省使用正则匹配
+     * 比如单价默认的值是0.00，当输入商品后，页面会自动更新为非0.00的一个价格
+     */
+    public void untilTextNotMatch(WebElement element, String unexpectedText, MatchType matchType) {
+        logger.info(element.toString());
+        if (null == matchType) matchType = MatchType.match;
+        MatchType finalMatchType = matchType;
+        getWait().until(d -> {
+            String text = element.getText();
+            return !MatchType.match(text, unexpectedText, finalMatchType);
+        });
+    }
+
+
+    /**
+     * 直到元素文本包含期望值
+     */
+    public void untilTextContains(By by, String expectedText) {
+        untilTextMatch(by, expectedText, MatchType.contains);
+    }
+
+    public void untilTextContains(WebElement element, String expectedText) {
+        untilTextMatch(element, expectedText, MatchType.contains);
+    }
+
+    public void untilTextNotContains(By by, String expectedText) {
+        untilTextNotMatch(by, expectedText, MatchType.contains);
+    }
+
+    public void untilTextNotContains(WebElement element, String expectedText) {
+        untilTextNotMatch(element, expectedText, MatchType.contains);
+    }
+
+    public void untilTextEqual(By by, String expectedText) {
+        untilTextMatch(by, expectedText, MatchType.equal);
+    }
+
+    public void untilTextEqual(WebElement element, String expectedText) {
+        untilTextMatch(element, expectedText, MatchType.equal);
+    }
+
+    public void untilTextNotEqual(By by, String unexpectedText) {
+        untilTextNotMatch(by, unexpectedText, MatchType.equal);
+    }
+
+    public void untilTextNotEqual(WebElement element, String unexpectedText) {
+        untilTextNotMatch(element, unexpectedText, MatchType.equal);
+    }
+
+    public WebElement findElement(By by) {
+        WebElement element = untilVisible(by);
+        return element;
+    }
+
+    /**
+     * 查找元素，显示等待
+     */
+    public List<WebElement> findElements(By by) {
+        return getWait().until(d -> d.findElements(by));
+    }
+
+    /**
+     * 查找元素，显示等待
+     */
+    public WebElement findElement(WebElement element, By by) {
+        return getWait().until(d -> element.findElement(by));
+    }
+
+    /**
+     * 查找元素，显示等待
+     */
+    public List<WebElement> findElements(WebElement element, By by) {
+        return getWait().until(d -> element.findElements(by));
+    }
+
+    /**
+     * 直到元素消失，包括以下两种情况
+     * 1.元素自始至终就没有存在过（主要是第一次尝试查找元素就没有找到）
+     * 2.元素找到过，直到某个时间点，元素找不到了
+     *
+     * @param by
+     */
+    public void untilElementDestroyed(By by) {
+        getWait().until(d -> {
+            WebElement e = d.findElement(by);
+            return e == null ? true : false;
+        });
+    }
+
+    public String getText(By by) {
+        WebElement element = findElement(by);
+        try {
+            return getText(element);
+        } catch (StaleElementReferenceException e) {
+            //如果失败，则重新获取
+            try {
+                Thread.currentThread().sleep(500);
+            } catch (InterruptedException interruptedException) {
+                logger.error("", interruptedException);
+            }
+            WebElement element1 = findElement(by);
+            return element1.getText();
+        }
+    }
+
+    public String getText(WebElement element) {
+
+        return element.getText();
+    }
+
 }

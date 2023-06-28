@@ -12,7 +12,7 @@ public class ForestPage extends AppPage {
     private static int instanceTimes;
     //是否还有能量
     private boolean hasNext;
-    private String who = "自己";
+    private static String who;
     //去种树，当能量满足要求时，支付宝引导用户去种树
     By platTrees = By.xpath("//android.widget.Button[@text='去种树']");
     //森林新消息，第一次进入时，校验页面是否加载完成时使用
@@ -52,6 +52,7 @@ public class ForestPage extends AppPage {
         if (instanceTimes > 1) {
             try {
                 untilVisible(ta);
+                untilTextNotEqual(title, who + "的蚂蚁森林");
                 this.hasNext = true;
                 WebElement forestTitle = untilVisible(title);
                 String titleText = forestTitle.getText();
@@ -61,6 +62,7 @@ public class ForestPage extends AppPage {
             } catch (RuntimeException e) {
                 //非第一次进入蚂蚁页面，并且页面标题不是『xxx的蚂蚁森林』，则认为能量收完了，此时中断循环
                 //WebElement backHomeBtn = wait.until(ExpectedConditions.visibilityOfElementLocated(backForestHomeBtn));
+                logger.error("", e);
                 this.hasNext = false;
                 logger.info("所有好友的能量收取完成");
             }
@@ -68,6 +70,7 @@ public class ForestPage extends AppPage {
             //判断『森林新消息』，确保页面加载完整
             untilVisible(newMsg);
             this.hasNext = true;
+            who = "自己";
             logger.info("进入自己的蚂蚁森林");
         }
     }
