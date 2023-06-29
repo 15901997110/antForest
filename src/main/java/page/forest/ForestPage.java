@@ -30,6 +30,8 @@ public class ForestPage extends AppPage {
     By skinTip = By.xpath("//android.view.View[contains(@text,'皮肤')]");
     By backForestHomeBtn = By.xpath("//android.widget.Button[@text='返回我的森林']");
 
+    //挂件相关
+    By treeTip = By.xpath("//*[@resource-id='J_treeContainer']//*[@resource-id='J_pop_treedialog_close']");
     /**
      * 注意，不同的手机，屏幕分辨率不同，这里的点需要重新适配
      */
@@ -99,19 +101,30 @@ public class ForestPage extends AppPage {
     public void getEnergy(Point point) throws Exception {
         tap(point);
         try {
-            WebElement closeBtn = driver.findElement(tipCloseBtn);
-            //如果上一步弹出了tip，进一步判断是不是帮好友复活能量
-            try {
-                WebElement resurrectionBtn = driver.findElement(confirmSendBtn);
-                click(resurrectionBtn);//确认发送
-                Thread.currentThread().sleep(500);
-            } catch (RuntimeException e) {
-                logger.warn("检测到弹出了tip,但不是『帮好友复活能量』", e);
+            if (instanceTimes > 1) {//朋友的蚂蚁森林页面
+                WebElement closeBtn = driver.findElement(tipCloseBtn);
+                //如果上一步弹出了tip，进一步判断是不是帮好友复活能量
                 try {
-                    click(closeBtn);
+                    WebElement resurrectionBtn = driver.findElement(confirmSendBtn);
+                    click(resurrectionBtn);//确认发送
                     Thread.currentThread().sleep(500);
-                } catch (StaleElementReferenceException e2) {
-                    driver.findElement(tipCloseBtn).click();
+                } catch (RuntimeException e) {
+                    logger.warn("检测到弹出了tip,但不是『帮好友复活能量』", e);
+                    try {
+                        click(closeBtn);
+                        Thread.currentThread().sleep(500);
+                    } catch (StaleElementReferenceException e2) {
+                        driver.findElement(tipCloseBtn).click();
+                        Thread.currentThread().sleep(500);
+                    }
+                }
+            } else {//自己的蚂蚁森林页面
+                WebElement element = driver.findElement(treeTip);
+                try {
+                    click(element);
+                    Thread.currentThread().sleep(500);
+                } catch (StaleElementReferenceException e) {
+                    driver.findElement(treeTip).click();
                     Thread.currentThread().sleep(500);
                 }
             }
