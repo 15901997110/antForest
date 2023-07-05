@@ -1,8 +1,13 @@
 package page.forest;
 
 import io.appium.java_client.AppiumDriver;
+import org.apache.commons.lang3.RandomUtils;
 import org.openqa.selenium.*;
 import page.AppPage;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * by qiwei.lu 2023/6/25
@@ -87,18 +92,20 @@ public class ForestPage extends AppPage {
      */
     public void getEnergy() throws Exception {
         logger.info("开始收取 {} 的能量", who);
-        //围着树点6下
-        getEnergy(energy1);
-        getEnergy(energy2);
-        getEnergy(energy3);
-        getEnergy(energy4);
-        getEnergy(energy5);
-        getEnergy(energy6);
+        List<Point> list = new ArrayList<>();
+        list.add(energy1);
+        list.add(energy2);
+        list.add(energy3);
+        list.add(energy4);
+        list.add(energy5);
+        list.add(energy6);
+        Collections.shuffle(list);//为了防止被支付宝判定为机器收取，这里做下随机顺序
+        list.stream().forEach(this::getEnergy);
         logger.info("结束收取 {} 的能量", who);
 
     }
 
-    public void getEnergy(Point point) throws Exception {
+    public void getEnergy(Point point) {
         tap(point);
         try {
             if (instanceTimes > 1) {//朋友的蚂蚁森林页面
@@ -115,8 +122,13 @@ public class ForestPage extends AppPage {
                         Thread.currentThread().sleep(500);
                     } catch (StaleElementReferenceException e2) {
                         driver.findElement(tipCloseBtn).click();
-                        Thread.currentThread().sleep(500);
+                        try {
+                            Thread.currentThread().sleep(500);
+                        } catch (InterruptedException interruptedException) {
+                        }
+                    } catch (InterruptedException interruptedException) {
                     }
+                } catch (InterruptedException e) {
                 }
             } else {//自己的蚂蚁森林页面
                 WebElement element = driver.findElement(treeTip);
@@ -125,28 +137,16 @@ public class ForestPage extends AppPage {
                     Thread.currentThread().sleep(500);
                 } catch (StaleElementReferenceException e) {
                     driver.findElement(treeTip).click();
-                    Thread.currentThread().sleep(500);
+                    try {
+                        Thread.currentThread().sleep(500);
+                    } catch (InterruptedException interruptedException) {
+                    }
+                } catch (InterruptedException e) {
                 }
             }
         } catch (NoSuchElementException e) {
             //没有找到是正常情况，大部分情况并不会点击触发tip
         }
-        /**
-         * 帮好友复活能量
-         */
-//        try {
-//            WebElement element = driver.findElement(confirmSendBtn);
-//            try {
-//                click(element);
-//            } catch (StaleElementReferenceException e) {
-//                driver.findElement(confirmSendBtn).click();
-//            }
-//            Thread.currentThread().sleep(500);
-//        } catch (NoSuchElementException e) {
-//            //这是正常情况，因为大部分点击不会弹出『帮好友收能量』，除非好友能量过期，并且点击到了过期能量球
-//        } catch (InterruptedException e) {
-//
-//        }
 
     }
 
