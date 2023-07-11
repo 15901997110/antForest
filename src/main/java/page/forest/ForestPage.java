@@ -35,21 +35,23 @@ public class ForestPage extends AppPage {
     By skinTip = By.xpath("//android.view.View[contains(@text,'皮肤')]");
     By backForestHomeBtn = By.xpath("//android.widget.Button[@text='返回我的森林']");
 
-    //挂件相关
-    By treeTip = By.xpath("//*[@resource-id='J_treeContainer']//*[@resource-id='J_pop_treedialog_close']");
+    //挂件,今日还有能量雨机会
+    //By treeTip = By.xpath("//*[@resource-id='J_treeContainer']//*[@resource-id='J_pop_treedialog_close']");
+    By treeTip = By.id("J_pop_treedialog_close");
+
     /**
      * 注意，不同的手机，屏幕分辨率不同，这里的点需要重新适配
      */
     //能量球
-    private static final Point energy1 = new Point(150, 480);
-    private static final Point energy2 = new Point(228, 431);
-    private static final Point energy3 = new Point(324, 406);
-    private static final Point energy4 = new Point(428, 410);
-    private static final Point energy5 = new Point(492, 428);
-    private static final Point energy6 = new Point(591, 493);
+    private final Point energy1 = new Point(150, 480);
+    private final Point energy2 = new Point(228, 431);
+    private final Point energy3 = new Point(324, 406);
+    private final Point energy4 = new Point(428, 410);
+    private final Point energy5 = new Point(492, 428);
+    private final Point energy6 = new Point(591, 493);
 
     //找能量
-    final Point findNext = new Point(652, 1042);
+    private final Point findNext = new Point(652, 1042);
 
 
     public ForestPage(AppiumDriver driver) {
@@ -86,6 +88,14 @@ public class ForestPage extends AppPage {
         return this.hasNext;
     }
 
+    /**
+     * 随机偏移
+     *
+     * @return
+     */
+    public Point offset(Point point) {
+        return point.moveBy(10 - RandomUtils.nextInt(0, 21), 10 - RandomUtils.nextInt(0, 21));
+    }
 
     /**
      * 收能量
@@ -93,12 +103,12 @@ public class ForestPage extends AppPage {
     public void getEnergy() throws Exception {
         logger.info("开始收取 {} 的能量", who);
         List<Point> list = new ArrayList<>();
-        list.add(energy1);
-        list.add(energy2);
-        list.add(energy3);
-        list.add(energy4);
-        list.add(energy5);
-        list.add(energy6);
+        list.add(offset(energy1));
+        list.add(offset(energy2));
+        list.add(offset(energy3));
+        list.add(offset(energy4));
+        list.add(offset(energy5));
+        list.add(offset(energy6));
         Collections.shuffle(list);//为了防止被支付宝判定为机器收取，这里做下随机顺序
         list.stream().forEach(this::getEnergy);
         logger.info("结束收取 {} 的能量", who);
@@ -151,7 +161,8 @@ public class ForestPage extends AppPage {
     }
 
     public ForestPage findFriendEnergy() throws InterruptedException {
-        tap(findNext);//找能量
+        Point point = findNext.moveBy(30 - RandomUtils.nextInt(0, 61), 10 - RandomUtils.nextInt(0, 21));
+        tap(point);//找能量
         return new ForestPage(driver);
     }
 
