@@ -2,7 +2,8 @@
 <suite name="suite name">
     <test name="test name">
         <classes>
-            <class name="cases.Debug"></class>
+<!--            <class name="cases.Debug"></class>-->
+            <class name="cases.Demo"/>
         </classes>
     </test>
 </suite>
