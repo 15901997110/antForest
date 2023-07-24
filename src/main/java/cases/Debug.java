@@ -7,6 +7,8 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,15 +34,17 @@ public class Debug {
         logger.info("test");
     }
 
-    public static void main(String[] args) {
-        List<Integer> list = new ArrayList<>();
-        list.add(1);
-        list.add(2);
-        list.add(3);
-        list.add(4);
-        list.add(5);
-        list.add(6);
-        Collections.shuffle(list);
-        System.out.println(list.toString());
+    public static void main(String[] args) throws InterruptedException {
+        LocalDateTime start = LocalDateTime.now();
+        LocalDateTime end = LocalDateTime.now().plusMinutes(10L);
+        Duration between = Duration.between(start, end);
+        Duration between2 = Duration.between(end, start).abs();
+
+        System.out.println(between);
+        System.out.println(between2);
+        System.out.println("between.isNegative():" + between.isNegative());
+        System.out.println("between2.isNegative():" + between2.isNegative());
+        System.out.println(between.toMillis());
+        System.out.println(between2.toMillis());
     }
 }

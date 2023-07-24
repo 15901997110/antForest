@@ -5,6 +5,9 @@ import org.apache.commons.lang3.RandomUtils;
 import org.openqa.selenium.*;
 import page.AppPage;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +18,8 @@ import java.util.List;
 public class ForestPage extends AppPage {
     //实例化蚂蚁森林页面的次数，第一次和非第一次，对于校验页面加载完成的方法不同
     private static int instanceTimes;
+    //    private static Clock start=Clock.systemDefaultZone();
+    private static LocalDateTime start = LocalDateTime.now();
     //是否还有能量
     private boolean hasNext;
     private static String who;
@@ -56,7 +61,9 @@ public class ForestPage extends AppPage {
 
     public ForestPage(AppiumDriver driver) {
         super(driver);
+
         instanceTimes++;
+
         logger.info("-------------------------------------------");
         if (instanceTimes > 1) {
             try {
@@ -71,7 +78,7 @@ public class ForestPage extends AppPage {
             } catch (RuntimeException e) {
                 //非第一次进入蚂蚁页面，并且页面标题不是『xxx的蚂蚁森林』，则认为能量收完了，此时中断循环
                 //WebElement backHomeBtn = wait.until(ExpectedConditions.visibilityOfElementLocated(backForestHomeBtn));
-                logger.error("", e);
+                logger.warn(e.getMessage());
                 this.hasNext = false;
                 logger.info("所有好友的能量收取完成");
             }
@@ -82,6 +89,14 @@ public class ForestPage extends AppPage {
             who = "自己";
             logger.info("进入自己的蚂蚁森林");
         }
+
+        //超过20分钟直接中断，阻止未预知的死循环（比如被支付宝判定为自动化收取 ，则会出现页面正常跳转，但是点击无法收取，也不报错的场景）
+        LocalDateTime current = LocalDateTime.now();
+        long millis = Duration.between(start, current).abs().toMillis();
+        if (millis > 20 * 60 * 1000) {
+            this.hasNext = false;
+            return;
+        }
     }
 
     public boolean hasNext() {
@@ -89,7 +104,7 @@ public class ForestPage extends AppPage {
     }
 
     /**
-     * 随机偏移
+     * 随机偏移，防止点击同一个位置被支付宝识别作弊
      *
      * @return
      */
