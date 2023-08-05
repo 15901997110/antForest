@@ -5,7 +5,6 @@ import org.apache.commons.lang3.RandomUtils;
 import org.openqa.selenium.*;
 import page.AppPage;
 
-import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,7 +25,8 @@ public class ForestPage extends AppPage {
     //去种树，当能量满足要求时，支付宝引导用户去种树
     By platTrees = By.xpath("//android.widget.Button[@text='去种树']");
     //森林新消息，第一次进入时，校验页面是否加载完成时使用
-    By newMsg = By.xpath("//android.view.View[@text='森林新消息']");
+//    By newMsg = By.xpath("//android.view.View[@text='森林新消息']");
+    By newMsg = By.xpath("//android.view.View[@text='新林新消息']");
     By ta = By.xpath("//android.view.View[contains(@text,'TA收取你')]");
     //证书解锁，有的话需要关闭掉这个提示
     By unlockTip = By.id("J_pop_treedialog_close");
